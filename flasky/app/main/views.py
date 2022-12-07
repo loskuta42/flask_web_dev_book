@@ -1,5 +1,5 @@
 from datetime import datetime
-from flask import render_template, session, redirect, url_for
+from flask import render_template, session, redirect, url_for, current_app
 from . import main
 from .forms import NameForm
 from .. import db
@@ -18,8 +18,8 @@ def index():
                 db.session.add(user)
                 db.session.commit()
                 session['known'] = False
-                if main.config['FLASKY_ADMIN']:
-                    send_email(main.config['FLASKY_ADMIN'], 'New User',
+                if current_app.config['FLASKY_ADMIN']:
+                    send_email(current_app.config['FLASKY_ADMIN'], 'New User',
                                'mail/new_user', user=user)
             else:
                 session['known'] = True
