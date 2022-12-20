@@ -31,7 +31,7 @@ def logout():
     return redirect(url_for('main.index'))
 
 
-@auth.route('/rester', methods=['GET', 'POST'])
+@auth.route('/register', methods=['GET', 'POST'])
 def register():
     form = RegistrationForm()
     if form.validate_on_submit():
@@ -66,11 +66,18 @@ def confirm(token):
 
 @auth.before_app_request
 def before_request():
-    if (current_user.is_authenticated
-            and not current_user.confirmed
-            and request.blueprint != 'auth'
-            and request.endpoint != 'static'):
-        return redirect(url_for('auth.unconfirmed'))
+    if current_user.is_authenticated:
+        current_user.ping()
+
+        # TODO temp solution
+        current_user.confirmed = True
+        db.session.commit()
+
+        if (not current_user.confirmed
+                and request.endpoint
+                and request.blueprint != 'auth'
+                and request.endpoint != 'static'):
+            return redirect(url_for('auth.unconfirmed'))
 
 
 @auth.route('/unconfirmed')
