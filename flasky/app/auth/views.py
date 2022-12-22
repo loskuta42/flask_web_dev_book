@@ -46,7 +46,6 @@ def register():
         send_email(user.email, 'Confirm Your Account',
                    'auth/email/confirm', user=user, token=token)
         flash('A confirmation email has been sent to you by email.')
-        # flash('You can now login.')
         return redirect(url_for('auth.login'))
     return render_template('auth/register.html', form=form)
 
@@ -71,6 +70,7 @@ def before_request():
 
         # TODO temp solution
         current_user.confirmed = True
+        db.session.add(current_user)
         db.session.commit()
 
         if (not current_user.confirmed
