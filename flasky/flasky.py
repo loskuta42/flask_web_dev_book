@@ -1,4 +1,9 @@
 import os
+from dotenv import load_dotenv
+
+dotenv_path = os.path.join(os.path.dirname(__file__), '.env')
+if os.path.exists(dotenv_path):
+    load_dotenv(dotenv_path)
 
 COV = None
 if os.environ.get('FLASK_COVERAGE'):
@@ -10,7 +15,7 @@ import sys
 import click
 from app import create_app, db
 from app.models import User, Role, Permission
-from flask_migrate import Migrate
+from flask_migrate import Migrate, upgrade
 
 
 app = create_app(os.getenv('FLASK_CONFIG') or 'default')
@@ -62,3 +67,16 @@ def profile(length, profile_dir):
     app.wsgi_app = ProfilerMiddleware(app.wsgi_app, restrictions=[length],
                                       profile_dir=profile_dir)
     app.run(debug=False)
+
+
+@app.cli.command()
+def deploy():
+    """Run deployment tasks."""
+    # migrate database to latest revision
+    upgrade()
+
+    # create or update user roles
+    Role.insert_roles()
+
+    # ensure all users are following themselves
+    User.add_self_follows()
