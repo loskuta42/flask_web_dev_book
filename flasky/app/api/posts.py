@@ -3,8 +3,9 @@ from http import HTTPStatus
 from flask import jsonify, request, current_app, url_for, g
 
 from . import api
+from .errors import forbidden
 from .. import db
-from .decorators import permission_required, is_post_author
+from .decorators import permission_required
 from ..models import Post, Permission
 
 
@@ -53,10 +54,12 @@ def new_post():
 
 
 @api.route('/posts/<int:id>', methods=['PUT'])
-@is_post_author
 @permission_required(Permission.WRITE)
 def edit_post(id):
     post = Post.query.get_or_404(id)
+    if g.current_user != post.author and \
+            not g.current_user.can(Permission.ADMIN):
+        return forbidden('Insufficient permissions')
     post.body = request.json.get('body', post.body)
     db.session.add(post)
     db.session.commit()

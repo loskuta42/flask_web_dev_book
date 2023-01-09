@@ -69,9 +69,9 @@ def before_request():
         current_user.ping()
 
         # TODO temp solution
-        current_user.confirmed = True
-        db.session.add(current_user)
-        db.session.commit()
+        # current_user.confirmed = True
+        # db.session.add(current_user)
+        # db.session.commit()
 
         if (not current_user.confirmed
                 and request.endpoint
